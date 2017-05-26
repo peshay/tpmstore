@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/peshay/tpm.svg)](https://travis-ci.org/peshay/tpm-ansible)
+[![Build Status](https://travis-ci.org/peshay/tpm-ansible.svg?branch=master)](https://travis-ci.org/peshay/tpm-ansible)
 [![GitHub release](https://img.shields.io/github/release/peshay/tpm-ansible.svg)]()
 [![GitHub tag](https://img.shields.io/github/tag/peshay/tpm-ansible.svg)]()
 [![license](https://img.shields.io/github/license/peshay/tpm-ansible.svg)]()
