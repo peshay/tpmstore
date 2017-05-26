@@ -6,13 +6,11 @@ python:
 - '3.6'
 install:
 - pip install ansible
-- pip install git+https://github.com/sivel/ansible-testing.git#egg=ansible_testing
 - git clone https://github.com/ansible/ansible.git
 before_script:
 - cd ansible && source hacking/env-setup && cd ..
 - ansible --version
 script:
-- ansible-validate-modules ./
 - ansible-test compile --python $TRAVIS_PYTHON_VERSION
 
 notifications:
