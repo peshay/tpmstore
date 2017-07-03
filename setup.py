@@ -116,7 +116,7 @@ def _post_build_toolkit(ansible_dirs, plugin_dir=None):
     '''
     _egg_files = [];
     for ansible_dir in ansible_dirs:
-        symlink_target = os.path.join(plugin_dir, 'plugins/lookup/tpmstore.py');
+        symlink_target = os.path.join(plugin_dir, 'tpmstore.py');
         symlink_name = os.path.join(ansible_dir, 'plugins/lookup/tpmstore.py');
         try:
             os.symlink(symlink_target, symlink_name);

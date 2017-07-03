@@ -157,7 +157,7 @@ class LookupModule(LookupBase):
         # format the search to get an exact result for name
         search = "name:[{}]".format(name)
         try:
-            if "unlock_reason" un locals():
+            if "unlock_reason" in locals():
                 tpmconn = tpm.TpmApiv4(tpmurl, username=tpmuser, password=tpmpass, unlock_reason=unlock_reason)
             else:
                 tpmconn = tpm.TpmApiv4(tpmurl, username=tpmuser, password=tpmpass)
