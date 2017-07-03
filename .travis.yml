@@ -5,8 +5,7 @@ python:
 - '3.5'
 - '3.6'
 install:
-- pip install ansible
-- git clone https://github.com/ansible/ansible.git
+- pip install -r requirements.txt
 before_script:
 - cd ansible && source hacking/env-setup && cd ..
 - ansible --version
