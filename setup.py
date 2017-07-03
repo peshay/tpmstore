@@ -205,7 +205,7 @@ pkg_download_url = 'https://github.com/peshay/tpmstore/archive/master.zip';
 pkg_author = 'Andreas Hubert';
 pkg_author_email = 'anhubert@gmail.com';
 pkg_packages = [pkg_name.lower()];
-pkg_requires = ['ansible>=2.0'];
+pkg_requires = ['ansible>=2.0', 'tpm'];
 pkg_data=[
     '*.yml',
     '*.j2',
@@ -225,6 +225,13 @@ pkg_classifiers=[
     'Operating System :: POSIX :: Linux',
     'Topic :: Utilities',
     'Topic :: System :: Systems Administration',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.3',
+    'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6'
 ];
 pkg_keywords=[
     'ansible',
