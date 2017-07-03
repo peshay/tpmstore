@@ -25,7 +25,7 @@ class UtilitiesTest(unittest.TestCase):
             self.assertTrue(rst, 'ssh client is not found');
         except:
             e = sys.exc_info();
-            raise e[0], e[1], e[2].tb_next;
+            raise e[0](e[1], e[2].tb_next);
 
     def test_is_expect_available(self):
         rst = self._find_utility('expect');
@@ -33,7 +33,7 @@ class UtilitiesTest(unittest.TestCase):
             self.assertTrue(rst, 'expect utility is not found');
         except:
             e = sys.exc_info();
-            raise e[0], e[1], e[2].tb_next;
+            raise e[0](e[1], e[2].tb_next);
 
 def main():
     unittest.main();
