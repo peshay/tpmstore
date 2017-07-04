@@ -1,3 +1,11 @@
+#
+# tpmstore - TeamPasswordManager lookup plugin for Ansible.
+# Copyright (C) 2017 Andreas Hubert
+# See LICENSE.txt for licensing details
+#
+# File: tpmstore.py
+#
+
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.lookup import LookupBase
 import tpm
@@ -162,7 +170,7 @@ class LookupModule(LookupBase):
             else:
                 tpmconn = tpm.TpmApiv4(tpmurl, username=tpmuser, password=tpmpass)
             match = tpmconn.list_passwords_search(search)
-        except AttributeError as e:
+        except tpm.TpmApiv4.ConfigError as e:
             raise AnsibleError("First argument has to be a valid URL to TeamPasswordManager API: {}".format(tpmurl))
         except tpm.TPMException as e:
             raise AnsibleError(e)
@@ -204,7 +212,7 @@ class LookupModule(LookupBase):
             except tpm.TPMException as e:
                 raise AnsibleError(e)
         else:
+            result = tpmconn.show_password(match[0].get("id"))
             ret = [result.get("password")]
-
 
         return ret
