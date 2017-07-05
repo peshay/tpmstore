@@ -193,7 +193,7 @@ class LookupModule(LookupBase):
             else:
                 raise AnsibleError("To create a complete new entry, project_id is mandatory.")
         elif len(match) < 1 and create == False:
-            raise AnsibleError("Found now match for: {}".format(name))
+            raise AnsibleError("Found no match for: {}".format(name))
         elif len(match) > 1:
             raise AnsibleError("Found more then one match for the entry, please be more specific: {}".format(name))
         elif create == True:

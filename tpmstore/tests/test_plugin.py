@@ -99,3 +99,21 @@ class TestTpmstorePlugin(unittest.TestCase):
             self.lookup_plugin.run(['https://foo.bar', 'tpmuser', 'tpmass', 'name={}'.format(search_sring), 'create=True'])
         log.debug("context exception: {}".format(context.exception))
         self.assertTrue(exception_error in str(context.exception))
+
+    @patch('tpm.TpmApiv4', new=FakeTPM)
+    def test_no_match_found_exception(self):
+        search_sring = "noresult"
+        exception_error = "Found no match for: {}".format(search_sring)
+        with self.assertRaises(AnsibleError) as context:
+            self.lookup_plugin.run(['https://foo.bar', 'tpmuser', 'tpmass', 'name={}'.format(search_sring), 'create=False'])
+        log.debug("context exception: {}".format(context.exception))
+        self.assertTrue(exception_error in str(context.exception))
+
+    @patch('tpm.TpmApiv4.list_passwords_search', return_value=[{'id': 42}])
+    @patch('tpm.TpmApiv4.show_password', return_value={'id': 42, 'password': 'foobar'})
+    @patch('tpm.TpmApiv4.__init__', return_value=None)
+    def test_successful_result(self, tpm_init_mock, tpm_show_mock, tpm_list_mock):
+        unlock_reason = 'to unlock'
+        result = self.lookup_plugin.run(['https://foo.bar', 'tpmuser', 'tpmass', 'name=1result', 'reason={}'.format(unlock_reason)])
+        self.assertEqual(tpm_init_mock.call_args[1].get('unlock_reason'), unlock_reason)
+        self.assertEqual(result, ['foobar'])
