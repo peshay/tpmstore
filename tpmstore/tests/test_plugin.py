@@ -16,35 +16,6 @@ from logging import getLogger
 
 log = getLogger(__name__)
 
-class FakeTPM(TpmApiv4):
-    def __init__(self, url, **kwargs):
-        self.unlock_reason = False
-        for key in kwargs:
-            if key == 'private_key':
-                self.private_key = kwargs[key]
-            elif key == 'public_key':
-                self.public_key = kwargs[key]
-            elif key == 'username':
-                self.username = kwargs[key]
-            elif key == 'password':
-                self.password = kwargs[key]
-            elif key == 'unlock_reason':
-                self.unlock_reason = kwargs[key]
-
-    def list_passwords_search(self, search):
-        if search == 'name:[1result]':
-            return [{'id': 42}]
-        elif search == 'name:[2result]':
-            return [{'id': 42}, {'id': 73}]
-        elif search == 'name:[noresult]':
-            return []
-        else:
-            log.debug(search)
-            return [{'id': search}]
-
-    def show_password(self, id):
-        return {'id': id, 'password': 'foobar'}
-
 
 class TestTpmstorePlugin(unittest.TestCase):
 
@@ -82,8 +53,9 @@ class TestTpmstorePlugin(unittest.TestCase):
         log.debug("context exception: {}".format(context.exception))
         self.assertTrue(exception_error in str(context.exception))
 
-    @patch('tpm.TpmApiv4', new=FakeTPM)
-    def test_too_many_results_exception(self):
+    @patch('tpm.TpmApiv4.list_passwords_search', return_value=[{'id': 42}, {'id': 73}])
+    @patch('tpm.TpmApiv4.__init__', return_value=None)
+    def test_too_many_results_exception(self, tpm_init_mock, tpm_list_mock):
         search_sring = "2result"
         exception_error = 'Found more then one match for the entry, please be more specific: {}'.format(search_sring)
         with self.assertRaises(AnsibleError) as context:
@@ -91,8 +63,9 @@ class TestTpmstorePlugin(unittest.TestCase):
         log.debug("context exception: {}".format(context.exception))
         self.assertTrue(exception_error in str(context.exception))
 
-    @patch('tpm.TpmApiv4', new=FakeTPM)
-    def test_create_needs_projectid_exception(self):
+    @patch('tpm.TpmApiv4.list_passwords_search', return_value=[])
+    @patch('tpm.TpmApiv4.__init__', return_value=None)
+    def test_create_needs_projectid_exception(self, tpm_init_mock, tpm_list_mock):
         search_sring = "noresult"
         exception_error = 'To create a complete new entry, project_id is mandatory.'
         with self.assertRaises(AnsibleError) as context:
@@ -100,8 +73,9 @@ class TestTpmstorePlugin(unittest.TestCase):
         log.debug("context exception: {}".format(context.exception))
         self.assertTrue(exception_error in str(context.exception))
 
-    @patch('tpm.TpmApiv4', new=FakeTPM)
-    def test_no_match_found_exception(self):
+    @patch('tpm.TpmApiv4.list_passwords_search', return_value=[])
+    @patch('tpm.TpmApiv4.__init__', return_value=None)
+    def test_no_match_found_exception(self, tpm_init_mock, tpm_list_mock):
         search_sring = "noresult"
         exception_error = "Found no match for: {}".format(search_sring)
         with self.assertRaises(AnsibleError) as context:
