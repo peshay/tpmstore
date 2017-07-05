@@ -11,6 +11,7 @@ from ansible.errors import AnsibleError
 from ansible.module_utils import six
 from tpmstore.tpmstore import LookupModule
 from tpm import TpmApiv4
+from tpm import TPMException
 from logging import getLogger
 
 
@@ -83,6 +84,22 @@ class TestTpmstorePlugin(unittest.TestCase):
         log.debug("context exception: {}".format(context.exception))
         self.assertTrue(exception_error in str(context.exception))
 
+    @patch('tpm.TpmApiv4.show_password', return_value={'id': 73, 'name': 'A new Entry'})
+    @patch('tpm.TpmApiv4.create_password', side_effect=TPMException("Name already exists."))
+    @patch('tpm.TpmApiv4.list_passwords_search', return_value=[])
+    @patch('tpm.TpmApiv4.__init__', return_value=None)
+    def test_exception_on_create(self, mock_init, mock_search, mock_create, mock_show):
+        exception_error = "Name already exists."
+        tpmurl = 'https://foo.bar'
+        tpmuser = 'thatsme'
+        tpmpass = 'mysecret'
+        search = 'A new Entry'
+        project_id = '4'
+        with self.assertRaises(AnsibleError) as context:
+            self.lookup_plugin.run(['https://foo.bar', 'tpmuser', 'tpmass', 'name={}'.format(search), 'create=True', 'project_id={}'.format(project_id)])
+        log.debug("context exception: {}".format(context.exception))
+        self.assertTrue(exception_error in str(context.exception))
+
     @patch('tpm.TpmApiv4.list_passwords_search', return_value=[{'id': 42}])
     @patch('tpm.TpmApiv4.show_password', return_value={'id': 42, 'password': 'foobar'})
     @patch('tpm.TpmApiv4.__init__', return_value=None)
@@ -97,7 +114,7 @@ class TestTpmstorePlugin(unittest.TestCase):
     @patch('tpm.TpmApiv4.generate_password', return_value={'password': 'random secret'})
     @patch('tpm.TpmApiv4.list_passwords_search', return_value=[])
     @patch('tpm.TpmApiv4.__init__', return_value=None)
-    def test_verify_all_values_passed(self, mock_init, mock_search, mock_generate_pass, mock_create, mock_show):
+    def test_verify_all_values_passed_at_create(self, mock_init, mock_search, mock_generate_pass, mock_create, mock_show):
         tpmurl = 'https://foo.bar'
         tpmuser = 'thatsme'
         tpmpass = 'mysecret'
@@ -110,22 +127,61 @@ class TestTpmstorePlugin(unittest.TestCase):
         notes = 'Created by Ansible'
         reason = 'because I can'
         email = 'me@example.com'
+        expiry_date = "1983-04-25"
         result = self.lookup_plugin.run([tpmurl, tpmuser, tpmpass, 'name={}'.format(search),
                                          'create=True', 'project_id={}'.format(project_id), 'password=random',
                                          'username={}'.format(username), 'access_info={}'.format(access_info),
                                          'tags={}'.format(tags), 'notes={}'.format(notes), 'email={}'.format(email),
-                                         'reason={}'.format(reason)])
-        log.debug(mock_create.call_args[0])
+                                         'expiry_date={}'.format(expiry_date), 'reason={}'.format(reason)])
         self.assertEqual(mock_init.call_args[0][0], tpmurl)
         self.assertEqual(mock_init.call_args[1].get('username'), tpmuser)
         self.assertEqual(mock_init.call_args[1].get('password'), tpmpass)
         self.assertEqual(mock_init.call_args[1].get('unlock_reason'), reason)
         self.assertEqual(mock_search.call_args[0][0], 'name:[{}]'.format(search))
         self.assertEqual(mock_create.call_args[0][0].get('project_id'), project_id)
+        self.assertEqual(mock_create.call_args[0][0].get('expiry_date'), expiry_date)
         self.assertEqual(mock_create.call_args[0][0].get('password'), random_password)
-
         self.assertEqual(mock_create.call_args[0][0].get('username'), username)
         self.assertEqual(mock_create.call_args[0][0].get('access_info'), access_info)
         self.assertEqual(mock_create.call_args[0][0].get('tags'), tags)
         self.assertEqual(mock_create.call_args[0][0].get('notes'), notes)
         self.assertEqual(mock_create.call_args[0][0].get('email'), email)
+
+
+    @patch('tpm.TpmApiv4.show_password', return_value={'id': 73, 'name': 'A new Entry'})
+    @patch('tpm.TpmApiv4.update_password', return_value={'id': 73})
+    @patch('tpm.TpmApiv4.list_passwords_search', return_value=[{'id': 73}])
+    @patch('tpm.TpmApiv4.__init__', return_value=None)
+    def test_verify_all_values_passed_at_update(self, mock_init, mock_search, mock_update_pass, mock_show):
+        tpmurl = 'https://foo.bar'
+        tpmuser = 'thatsme'
+        tpmpass = 'mysecret'
+        search = 'A new Entry'
+        project_id = '4'
+        password = "crp71c s3cr3t!@#$%^&*"
+        username = 'root'
+        access_info = 'ssh://root@host'
+        tags = 'root,ssh,aws,cloud'
+        notes = 'Created by Ansible'
+        reason = 'because I can'
+        email = 'me@example.com'
+        expiry_date = "1983-04-25"
+        result = self.lookup_plugin.run([tpmurl, tpmuser, tpmpass, 'name={}'.format(search),
+                                         'create=True', 'project_id={}'.format(project_id), 'password={}'.format(password),
+                                         'username={}'.format(username), 'access_info={}'.format(access_info),
+                                         'tags={}'.format(tags), 'notes={}'.format(notes), 'email={}'.format(email),
+                                         'expiry_date={}'.format(expiry_date), 'reason={}'.format(reason)])
+        log.debug(mock_update_pass.call_args[0][1])
+        self.assertEqual(mock_init.call_args[0][0], tpmurl)
+        self.assertEqual(mock_init.call_args[1].get('username'), tpmuser)
+        self.assertEqual(mock_init.call_args[1].get('password'), tpmpass)
+        self.assertEqual(mock_init.call_args[1].get('unlock_reason'), reason)
+        self.assertEqual(mock_search.call_args[0][0], 'name:[{}]'.format(search))
+        self.assertEqual(mock_update_pass.call_args[0][1].get('project_id'), project_id)
+        self.assertEqual(mock_update_pass.call_args[0][1].get('expiry_date'), expiry_date)
+        self.assertEqual(mock_update_pass.call_args[0][1].get('password'), password)
+        self.assertEqual(mock_update_pass.call_args[0][1].get('username'), username)
+        self.assertEqual(mock_update_pass.call_args[0][1].get('access_info'), access_info)
+        self.assertEqual(mock_update_pass.call_args[0][1].get('tags'), tags)
+        self.assertEqual(mock_update_pass.call_args[0][1].get('notes'), notes)
+        self.assertEqual(mock_update_pass.call_args[0][1].get('email'), email)
