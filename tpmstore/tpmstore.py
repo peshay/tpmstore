@@ -186,7 +186,7 @@ class LookupModule(LookupBase):
                         password = new_password
                 try:
                     newid = tpmconn.create_password(new_entry)
-                    display.display("Created new entry with ID: {}".format(newid))
+                    display.display("Created new entry with ID: {}".format(newid.get('id')))
                     ret = [password]
                 except tpm.TPMException as e:
                     raise AnsibleError(e)
@@ -197,15 +197,13 @@ class LookupModule(LookupBase):
         elif len(match) > 1:
             raise AnsibleError("Found more then one match for the entry, please be more specific: {}".format(name))
         elif create == True:
-            result = tpmconn.show_password(match[0].get("id"))
+            result = tpmconn.show_password(match[0])
             display.display('Will update entry "{}" with ID "{}"'.format(result.get("name"), result.get("id")))
             if "password" in locals():
                 if password == "random":
                     new_password = tpmconn.generate_password().get("password")
                     new_entry.update({'password': new_password})
                     password = new_password
-            if "project_id" in locals():
-                del new_entry["project_id"]
             try:
                 tpmconn.update_password(result.get("id"),new_entry)
                 ret = [password]
