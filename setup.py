@@ -207,9 +207,6 @@ pkg_author_email = 'anhubert@gmail.com';
 pkg_packages = [pkg_name.lower()];
 pkg_requires = ['ansible>=2.0', 'tpm'];
 pkg_data=[
-    '*.yml',
-    '*.j2',
-    'tests/*.py',
     'plugins/lookup/*.py',
     'README.md',
     'LICENSE.txt',
