@@ -91,3 +91,41 @@ class TestTpmstorePlugin(unittest.TestCase):
         result = self.lookup_plugin.run(['https://foo.bar', 'tpmuser', 'tpmass', 'name=1result', 'reason={}'.format(unlock_reason)])
         self.assertEqual(tpm_init_mock.call_args[1].get('unlock_reason'), unlock_reason)
         self.assertEqual(result, ['foobar'])
+
+    @patch('tpm.TpmApiv4.show_password', return_value={'id': 73, 'name': 'A new Entry'})
+    @patch('tpm.TpmApiv4.create_password', return_value={'id': 73})
+    @patch('tpm.TpmApiv4.generate_password', return_value={'password': 'random secret'})
+    @patch('tpm.TpmApiv4.list_passwords_search', return_value=[])
+    @patch('tpm.TpmApiv4.__init__', return_value=None)
+    def test_verify_all_values_passed(self, mock_init, mock_search, mock_generate_pass, mock_create, mock_show):
+        tpmurl = 'https://foo.bar'
+        tpmuser = 'thatsme'
+        tpmpass = 'mysecret'
+        search = 'A new Entry'
+        project_id = '4'
+        random_password = "random secret"
+        username = 'root'
+        access_info = 'ssh://root@host'
+        tags = 'root,ssh,aws,cloud'
+        notes = 'Created by Ansible'
+        reason = 'because I can'
+        email = 'me@example.com'
+        result = self.lookup_plugin.run([tpmurl, tpmuser, tpmpass, 'name={}'.format(search),
+                                         'create=True', 'project_id={}'.format(project_id), 'password=random',
+                                         'username={}'.format(username), 'access_info={}'.format(access_info),
+                                         'tags={}'.format(tags), 'notes={}'.format(notes), 'email={}'.format(email),
+                                         'reason={}'.format(reason)])
+        log.debug(mock_create.call_args[0])
+        self.assertEqual(mock_init.call_args[0][0], tpmurl)
+        self.assertEqual(mock_init.call_args[1].get('username'), tpmuser)
+        self.assertEqual(mock_init.call_args[1].get('password'), tpmpass)
+        self.assertEqual(mock_init.call_args[1].get('unlock_reason'), reason)
+        self.assertEqual(mock_search.call_args[0][0], 'name:[{}]'.format(search))
+        self.assertEqual(mock_create.call_args[0][0].get('project_id'), project_id)
+        self.assertEqual(mock_create.call_args[0][0].get('password'), random_password)
+
+        self.assertEqual(mock_create.call_args[0][0].get('username'), username)
+        self.assertEqual(mock_create.call_args[0][0].get('access_info'), access_info)
+        self.assertEqual(mock_create.call_args[0][0].get('tags'), tags)
+        self.assertEqual(mock_create.call_args[0][0].get('notes'), notes)
+        self.assertEqual(mock_create.call_args[0][0].get('email'), email)
