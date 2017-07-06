@@ -208,7 +208,7 @@ pkg_packages = [pkg_name.lower()];
 pkg_requires = ['ansible>=2.0', 'tpm'];
 pkg_data=[
     'plugins/lookup/*.py',
-    'README.md',
+    'plugins/lookup/README',
     'LICENSE.txt',
 ];
 pkg_platforms='any';
@@ -239,7 +239,7 @@ pkg_keywords=[
 pkg_test_suite='setup._load_test_suite';
 
 pkg_long_description=pkg_description;
-with open(os.path.join(pkg_dir, pkg_name, 'README.md'), encoding='utf-8') as f:
+with open(os.path.join(pkg_dir, pkg_name, 'README'), encoding='utf-8') as f:
     pkg_long_description = f.read();
 
 setup(
