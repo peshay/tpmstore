@@ -16,37 +16,23 @@ except ImportError:
 
 from setuptools.command.install import install;
 from setuptools.command.sdist import sdist;
-from setuptools.command.test import test;
 from setuptools.command.develop import develop;
 from setuptools import setup;
 from codecs import open;
 import traceback;
-import unittest;
 import os;
 import sys;
 import re;
 import stat;
 
-import unittest;
 
 pkg_name = 'tpmstore';
-pkg_ver = '0.1.0';
+pkg_ver = '0.1.1';
 
 cmdclass = {};
 
-def _load_test_suite():
-    test_loader = unittest.TestLoader();
-    test_suite = test_loader.discover(os.path.join(pkg_dir, pkg_name, 'tests'), pattern='test_*.py');
-    return test_suite;
 
 def pre_build_toolkit():
-    for ts in _load_test_suite():
-        tsr=unittest.TextTestRunner();
-        tr = tsr.run(ts);
-        if len(tr.failures) > 0:
-            for tf in tr.failures:
-                print('[ERROR] ' + str(tf[1]));
-                return [];
     print("[INFO] checking whether 'ansible' python package is installed ...");
     ansible_dirs = _find_py_package('ansible');
     if len(ansible_dirs) == 0:
@@ -140,7 +126,6 @@ class install_(install):
             self.execute(_post_build_toolkit, (ansible_dirs, self.install_lib, ), msg="running post_install_scripts");
 
 cmdclass['install'] = install_;
-cmdclass['bdist_wheel'] = install_;
 
 class uninstall_(develop):
     def run(self):
@@ -207,11 +192,8 @@ pkg_author_email = 'anhubert@gmail.com';
 pkg_packages = [pkg_name.lower()];
 pkg_requires = ['ansible>=2.0', 'tpm'];
 pkg_data=[
-    '*.yml',
-    '*.j2',
-    'tests/*.py',
     'plugins/lookup/*.py',
-    'README.md',
+    'README',
     'LICENSE.txt',
 ];
 pkg_platforms='any';
@@ -239,10 +221,9 @@ pkg_keywords=[
     'console',
     'automation',
 ];
-pkg_test_suite='setup._load_test_suite';
 
 pkg_long_description=pkg_description;
-with open(os.path.join(pkg_dir, pkg_name, 'README.md'), encoding='utf-8') as f:
+with open(os.path.join(pkg_dir, pkg_name, 'README'), encoding='utf-8') as f:
     pkg_long_description = f.read();
 
 setup(
@@ -263,6 +244,5 @@ setup(
     },
     keywords=pkg_keywords,
     install_requires=pkg_requires,
-    test_suite=pkg_test_suite,
     cmdclass=cmdclass
 );
