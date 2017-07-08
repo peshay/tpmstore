@@ -167,7 +167,7 @@ class TermsHost(object):
         # format the search to get an exact result for name
         search = "name:[{}]".format(self.name)
         try:
-            if "unlock_reason" in locals():
+            if hasattr(th, "unlock_reason"):
                 self.tpmconn = tpm.TpmApiv4(self.tpmurl, username=self.tpmuser, password=self.tpmpass, unlock_reason=self.unlock_reason)
             else:
                 self.tpmconn = tpm.TpmApiv4(self.tpmurl, username=self.tpmuser, password=self.tpmpass)
@@ -187,8 +187,8 @@ class LookupModule(LookupBase):
         # If there are no entries and we should create
         if len(th.match) < 1 and th.create == True:
             display.display("No entry found, will create: {}".format(th.name))
-            if "project_id" in locals():
-                if "password" in locals():
+            if hasattr(th, "project_id"):
+                if hasattr(th, "password"):
                     if th.password == "random":
                         new_password = th.tpmconn.generate_password().get("password")
                         th.new_entry.update({'password': new_password})
@@ -208,7 +208,7 @@ class LookupModule(LookupBase):
         elif th.create == True:
             result = th.tpmconn.show_password(th.match[0])
             display.display('Will update entry "{}" with ID "{}"'.format(result.get("name"), result.get("id")))
-            if "password" in locals():
+            if hasattr(th, "password)":
                 if th.password == "random":
                     new_password = th.tpmconn.generate_password().get("password")
                     th.new_entry.update({'password': new_password})
