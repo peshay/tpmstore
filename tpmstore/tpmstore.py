@@ -208,7 +208,7 @@ class LookupModule(LookupBase):
         elif th.create == True:
             result = th.tpmconn.show_password(th.match[0])
             display.display('Will update entry "{}" with ID "{}"'.format(result.get("name"), result.get("id")))
-            if hasattr(th, "password)":
+            if hasattr(th, "password"):
                 if th.password == "random":
                     new_password = th.tpmconn.generate_password().get("password")
                     th.new_entry.update({'password': new_password})
