@@ -131,7 +131,7 @@ class TermsHost(object):
     def verify_values(self):
         """Verify the correctness of all the values."""
         # verify if either search or name is set
-        if not hasattr(self, 'name') or not hasattr(self, 'search'):
+        if not hasattr(self, 'name') and not hasattr(self, 'search'):
             raise AnsibleError('Either "name" or "search" have to be set.')
             
     def work_on_terms(self, terms):
