@@ -128,7 +128,7 @@ class TermsHost(object):
         self.verify_values()
         self.match = self.initiate_search()
     
-    def verify_values()
+    def verify_values(self):
         """Verify the correctness of all the values."""
         # verify if either search or name is set
         if not hasattr(self, 'name') or not hasattr(self, 'search'):
