@@ -146,6 +146,10 @@ class TermsHost(object):
                     # get entry
                     self.name = value
                     self.new_entry.update({'name': self.name})
+                if key == 'search':
+                    self.search = value
+                if key == 'return_value':
+                    self.return_value = value
                 # if not just lookup, but also create/update an entry
                 if key == "create":
                     if value == "True":
