@@ -31,10 +31,20 @@ DOCUMENTATION:
             description:
                 - Password to authenticate against TeamPasswordManager API. Should always be third parameter.
             required: True
+        search:
+            description:
+                - Searchtstring to use for the TeamPasswordManager search.
+            required: If 'name' is not set.
+            default: 'name:[name]'
         name:
             description:
                 - Name of the entry in TeamPasswordManager. Will search for exact match.
-            required: True
+            required: If 'search' is not set.
+        return_value:
+            description:
+                - Which fields from found entries should be returned.
+            required: False
+            default: password
         create:
             description:
                 - If False the plugin will only query for a password.
@@ -83,6 +93,8 @@ EXAMPLES:
   vars:
      tpmurl:   "https://MyTpmHost.example.com"
      retrieve_password: "{{ lookup('tpmstore', tpmurl, tpmuser, tpmpass, 'name=An existing entry name') }}"
+     retrieve_username: "{{ lookup('tpmstore', tpmurl, tpmuser, tpmpass, 'name=An existing entry name', 'return_value=username')}}"
+     search_by_tags: "{{ lookup('tpmstore', tpmurl, tpmuser, tpmpass, 'search=tags:sshhost') }}"
      retrieve_locked_password: "{{ lookup('tpmstore', tpmurl, tpmuser, tpmpass, 'name=An existing and locked entry name', 'reason=For Auto Deploy by Ansible') }}"
      newrandom_password: "{{ lookup('tpmstore', tpmurl, tpmuser, tpmpass, 'name=An existing entry name', 'create=True', 'password=random') }}"
      updatemore_values: "{{ lookup('tpmstore', tpmurl, tpmuser, tpmpass, 'name=An existing entry name', 'create=True', 'password=random', 'username=root', 'access_info=ssh://root@host', 'tags=root,ssh,aws,cloud', 'notes=Created by Ansible') }}"
@@ -113,9 +125,17 @@ class TermsHost(object):
         self.tpmuser=terms.pop(0)
         self.tpmpass=terms.pop(0)
         self.work_on_terms(terms)
-        self.initiate_search()
+        self.verify_values()
+        self.match = self.initiate_search()
     
+    def verify_values()
+        """Verify the correctness of all the values."""
+        # verify if either search or name is set
+        if not hasattr(self, 'name') or not hasattr(self, 'search'):
+            raise AnsibleError('Either "name" or "search" have to be set.')
+            
     def work_on_terms(self, terms):
+        """Collect all the terms."""
         self.create = False
         self.new_entry = {}
         for term in terms:
@@ -165,17 +185,25 @@ class TermsHost(object):
 
     def initiate_search(self):
         # format the search to get an exact result for name
-        search = "name:[{}]".format(self.name)
+        if hasattr(self, 'search'):
+            search = self.search
+        else:
+            search = "name:[{}]".format(self.name)
+        # set default return_value to 'password'
+        if not hasattr(self, 'return_value'):
+            self.return_value = 'password'
+            
         try:
             if hasattr(self, "unlock_reason"):
                 self.tpmconn = tpm.TpmApiv4(self.tpmurl, username=self.tpmuser, password=self.tpmpass, unlock_reason=self.unlock_reason)
             else:
                 self.tpmconn = tpm.TpmApiv4(self.tpmurl, username=self.tpmuser, password=self.tpmpass)
-            self.match = self.tpmconn.list_passwords_search(search)
+            match = self.tpmconn.list_passwords_search(search)
         except tpm.TpmApiv4.ConfigError as e:
             raise AnsibleError("First argument has to be a valid URL to TeamPasswordManager API: {}".format(self.tpmurl))
         except tpm.TPMException as e:
             raise AnsibleError(e)
+        return match
 
 
 class LookupModule(LookupBase):
@@ -220,6 +248,6 @@ class LookupModule(LookupBase):
                 raise AnsibleError(e)
         else:
             result = th.tpmconn.show_password(th.match[0].get("id"))
-            ret = [result.get("password")]
+            ret = [result.get(th.return_value)]
 
         return ret

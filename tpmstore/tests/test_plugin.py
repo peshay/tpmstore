@@ -74,6 +74,13 @@ class TestTpmstorePlugin(unittest.TestCase):
         log.debug("context exception: {}".format(context.exception))
         self.assertTrue(exception_error in str(context.exception))
 
+    def test_no_name_or_search_set_exception(self):
+        exception_error = 'Either "name" or "search" have to be set.'
+        with self.assertRaises(AnsibleError) as context:
+            self.lookup_plugin.run(['https://foo.bar', 'tpmuser', 'tpmass', 'return_value=foobar'])
+        log.debug("context exception: {}".format(context.exception))
+        self.assertTrue(exception_error in str(context.exception))
+        
     @patch('tpm.TpmApiv4.list_passwords_search', return_value=[])
     @patch('tpm.TpmApiv4.__init__', return_value=None)
     def test_no_match_found_exception(self, tpm_init_mock, tpm_list_mock):
@@ -119,11 +126,28 @@ class TestTpmstorePlugin(unittest.TestCase):
     @patch('tpm.TpmApiv4.list_passwords_search', return_value=[{'id': 42}])
     @patch('tpm.TpmApiv4.show_password', return_value={'id': 42, 'password': 'foobar'})
     @patch('tpm.TpmApiv4.__init__', return_value=None)
-    def test_successful_result(self, tpm_init_mock, tpm_show_mock, tpm_list_mock):
+    def test_successful_default_result(self, tpm_init_mock, tpm_show_mock, tpm_list_mock):
         unlock_reason = 'to unlock'
         result = self.lookup_plugin.run(['https://foo.bar', 'tpmuser', 'tpmass', 'name=1result', 'reason={}'.format(unlock_reason)])
         self.assertEqual(tpm_init_mock.call_args[1].get('unlock_reason'), unlock_reason)
         self.assertEqual(result, ['foobar'])
+
+    @patch('tpm.TpmApiv4.list_passwords_search', return_value=[{'id': 42}])
+    @patch('tpm.TpmApiv4.show_password', return_value={'id': 42, 'password': 'foobar'})
+    @patch('tpm.TpmApiv4.__init__', return_value=None)        
+    def test_successful_search_result(self, mock_init, mock_show, mock_search):
+        search = 'username:[foobar]'
+        plugin_args = ['https://foo.bar', 'tpmuser', 'tpmass', 'search={}'.format(search)]
+        result = self.lookup_plugin.run(plugin_args)
+        self.assertEqual(mock_search.call_args[0][0], search)
+
+    @patch('tpm.TpmApiv4.list_passwords_search', return_value=[{'id': 42}])
+    @patch('tpm.TpmApiv4.show_password', return_value={'id': 42, 'password': 'foobar', 'username': 'bar'})
+    @patch('tpm.TpmApiv4.__init__', return_value=None)        
+    def test_successful_return_value_result(self, mock_init, mock_show, mock_search):
+        plugin_args = ['https://foo.bar', 'tpmuser', 'tpmass', 'name=1result', 'return_value=username']
+        result = self.lookup_plugin.run(plugin_args)
+        self.assertEqual(result[0], 'bar')
 
     @patch('tpm.TpmApiv4.show_password', return_value={'id': 73, 'name': 'A new Entry'})
     @patch('tpm.TpmApiv4.create_password', return_value={'id': 73})
