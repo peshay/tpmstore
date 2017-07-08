@@ -112,8 +112,8 @@ class TermsHost(object):
         self.tpmurl=terms.pop(0)
         self.tpmuser=terms.pop(0)
         self.tpmpass=terms.pop(0)
-        self.work_on_terms(terms)
-        self.initiate_search()
+        work_on_terms(terms)
+        initiate_search()
     
     def work_on_terms(self, terms):
         self.create = False
