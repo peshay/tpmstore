@@ -167,7 +167,7 @@ class TermsHost(object):
         # format the search to get an exact result for name
         search = "name:[{}]".format(self.name)
         try:
-            if hasattr(th, "unlock_reason"):
+            if hasattr(self, "unlock_reason"):
                 self.tpmconn = tpm.TpmApiv4(self.tpmurl, username=self.tpmuser, password=self.tpmpass, unlock_reason=self.unlock_reason)
             else:
                 self.tpmconn = tpm.TpmApiv4(self.tpmurl, username=self.tpmuser, password=self.tpmpass)
