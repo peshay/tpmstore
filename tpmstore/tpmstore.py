@@ -112,8 +112,8 @@ class TermsHost(object):
         self.tpmurl=terms.pop(0)
         self.tpmuser=terms.pop(0)
         self.tpmpass=terms.pop(0)
-        work_on_terms(terms)
-        initiate_search()
+        self.work_on_terms(terms)
+        self.initiate_search()
     
     def work_on_terms(self, terms):
         self.create = False
@@ -163,7 +163,7 @@ class TermsHost(object):
                     self.project_id = value
                     self.new_entry.update({'project_id': self.project_id})
 
-    def iniate_search(self):
+    def initiate_search(self):
         # format the search to get an exact result for name
         search = "name:[{}]".format(self.name)
         try:
