@@ -15,6 +15,7 @@ script:
 - nosetests -v --with-coverage
 after_success:
 - codecov
+before_deploy: "tar -cz -C tpmstore -f tpmstore.tar.gz tpmstore/*.py"
 deploy:
 - provider: pypi
   distributions: sdist
