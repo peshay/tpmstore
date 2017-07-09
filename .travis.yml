@@ -15,7 +15,7 @@ script:
 - nosetests -v --with-coverage
 after_success:
 - codecov
-before_deploy: "tar -cz -C tpmstore -f tpmstore-$TRAVIS_TAG.tar.gz tpmstore/*.py"
+before_deploy: "tar -czf tpmstore-$TRAVIS_TAG.tar.gz tpmstore/*.py"
 deploy:
 - provider: pypi
   distributions: sdist
