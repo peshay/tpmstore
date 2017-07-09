@@ -27,7 +27,7 @@ import stat;
 
 
 pkg_name = 'tpmstore';
-pkg_ver = '0.1.3';
+pkg_ver = '0.1.4';
 
 cmdclass = {};
 
