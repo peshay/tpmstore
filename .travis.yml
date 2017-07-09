@@ -15,25 +15,37 @@ script:
 - nosetests -v --with-coverage
 after_success:
 - codecov
-before_deploy: "tar -cz -C tpmstore -f tpmstore.tar.gz tpmstore/*.py"
-deploy:
-- provider: pypi
-  distributions: sdist
-  user: peshay
-  password:
-    secure: T5r5SeC9Xj6Nz8U8ffm22v266rj8vBqDXwEuPzJ5n6Ut0xAegU+Nh9whQyDdz4z94Nz+PCc/goGa7ezyhAO55/XVCfhjBnx1eEJBjwiS0COYdUUKZxWcv0gbqzf2hz+g6QdvwlgnjASoj/ldNAkMGqOOpp42Gak1/Q1gxI1nDJIFUGCnUPvXiTbNs4Vx6EH19cJcSBUmeCsmcVd0NMwJA5mZoOhFM3ktdrj/kT/XskM2nmFDfL8wY10LsuiUXsef+n+vq7iX04/Ql0XbEpIPw8KF+cEin7Dvc7gHDyJ4wu6Jw3c/iuhRzq5zieJarT5tahTVncPOel87AO9bVYQ8RKSxIPVqgCb21iNlGlA5+QU7MBsM70i0vPu9rasQRBQqZ+SqcrimVPiLpxWH3sxQBjyNLmkd6a6ZBB8h3zp9Bybw/ANNGrouFtVWH2klmgkAx5HGEUmDa5BgEf7ti8ievkff5gFpSF0sAHZUCb/o3UUEk3kPE06L5zEunyqWYvlTu1Ead8A8xJNYbMf7ELcICqUL9bC/cFb5SdhDgseoBt+kTinYoPfGEeFBgLifJheUad39kLJlUFEcZd469ea11GFr+1bMqziBiTNurOG/OeM0yIQS54fq6tlnxDcOQ/X61G1Ofu7rVeRIGvQ5UmA3H/hPyKNh/YDdbdjMKg+axGM=
-  on:
-    branch: master
-    tags: true
-    condition: $TRAVIS_PYTHON_VERSION = "2.7"
+jobs:
+  include:
+    - stage: GitHub Release
+      before_deploy: tar -czf tpmstore-$TRAVIS_TAG.tar.gz tpmstore/*.py
+      deploy:
+        provider: releases
+        api_key:
+          secure: pBl7JqzeCurAYKHw9QIw2275m4b1ctp/EfH8sCaVJZZZM/gqGRPt+ixyVCCYLrmjrfmKhaskBu232uf2WIPwBRu0W84PQY4TJx0wcyx2BLz22RMDFCZGuWjHtgUi61iV1R5yAJXmBfc/NxeaErQ7Py40rFcwczUhOPcRGBchJlblw6DiIFWVOSc0aQ1EfoDxxZoED9pefLg89RgnsR1/6XgsJkNlCu/+PXHWPHdow0iwBx9xmOHgu82JOBEdnRzba+68k2kNEtkIU0vrRt8Z8m/ws6KBCJJTw2hk64NTwABw8pN8+oGYt5uZc9egcicV0TYuPlw8T4g7r5zd5GCR+yUGqYDqemjinYhCoVCBvE8aDLAK96bkdLDpZJ9+XuyTjZbDplGovtFT6+qtfujnXdz1fF8iPKFY9gENlqRUM6kfrrvcqYMeHGObnNDfVXxjcQlgsYJ0NbGZZvmgQVYwg/yVVhxeRhnqxD6ya3wNCg7ISHct8+3qe+pIBsXueW7MrbKgmTmKIuvtCWVEHUp1lgVbHokJr+DfmndGD11PsHfNwsGCUtaS17ql2OuQZHUE2p1aCOjLRy4IQ4jX/SXEB+n0HDk9b7EOIhx2mXuaCThirMNYwtvYpmfznbBn54OLrNfuWJ8rmepm0QvN4eXMhAO1YTsM1SgJ5LEoo9OTEhQ=
+        file: tpmstore-$TRAVIS_TAG.tar.gz
+      on:
+        repo: peshay/tpmstore
+        branch: master
+        tags: true
+    - stage: PyPi Release
+      - provider: pypi
+        distributions: sdist
+        user: peshay
+        password:
+          secure: T5r5SeC9Xj6Nz8U8ffm22v266rj8vBqDXwEuPzJ5n6Ut0xAegU+Nh9whQyDdz4z94Nz+PCc/goGa7ezyhAO55/XVCfhjBnx1eEJBjwiS0COYdUUKZxWcv0gbqzf2hz+g6QdvwlgnjASoj/ldNAkMGqOOpp42Gak1/Q1gxI1nDJIFUGCnUPvXiTbNs4Vx6EH19cJcSBUmeCsmcVd0NMwJA5mZoOhFM3ktdrj/kT/XskM2nmFDfL8wY10LsuiUXsef+n+vq7iX04/Ql0XbEpIPw8KF+cEin7Dvc7gHDyJ4wu6Jw3c/iuhRzq5zieJarT5tahTVncPOel87AO9bVYQ8RKSxIPVqgCb21iNlGlA5+QU7MBsM70i0vPu9rasQRBQqZ+SqcrimVPiLpxWH3sxQBjyNLmkd6a6ZBB8h3zp9Bybw/ANNGrouFtVWH2klmgkAx5HGEUmDa5BgEf7ti8ievkff5gFpSF0sAHZUCb/o3UUEk3kPE06L5zEunyqWYvlTu1Ead8A8xJNYbMf7ELcICqUL9bC/cFb5SdhDgseoBt+kTinYoPfGEeFBgLifJheUad39kLJlUFEcZd469ea11GFr+1bMqziBiTNurOG/OeM0yIQS54fq6tlnxDcOQ/X61G1Ofu7rVeRIGvQ5UmA3H/hPyKNh/YDdbdjMKg+axGM=
+        on:
+          branch: master
+          tags: true
+          condition: $TRAVIS_PYTHON_VERSION = "2.7"
 
-- provider: pypi
-  distributions: sdist
-  server: https://test.pypi.org/legacy/
-  user: peshay
-  password:
-    secure: T5r5SeC9Xj6Nz8U8ffm22v266rj8vBqDXwEuPzJ5n6Ut0xAegU+Nh9whQyDdz4z94Nz+PCc/goGa7ezyhAO55/XVCfhjBnx1eEJBjwiS0COYdUUKZxWcv0gbqzf2hz+g6QdvwlgnjASoj/ldNAkMGqOOpp42Gak1/Q1gxI1nDJIFUGCnUPvXiTbNs4Vx6EH19cJcSBUmeCsmcVd0NMwJA5mZoOhFM3ktdrj/kT/XskM2nmFDfL8wY10LsuiUXsef+n+vq7iX04/Ql0XbEpIPw8KF+cEin7Dvc7gHDyJ4wu6Jw3c/iuhRzq5zieJarT5tahTVncPOel87AO9bVYQ8RKSxIPVqgCb21iNlGlA5+QU7MBsM70i0vPu9rasQRBQqZ+SqcrimVPiLpxWH3sxQBjyNLmkd6a6ZBB8h3zp9Bybw/ANNGrouFtVWH2klmgkAx5HGEUmDa5BgEf7ti8ievkff5gFpSF0sAHZUCb/o3UUEk3kPE06L5zEunyqWYvlTu1Ead8A8xJNYbMf7ELcICqUL9bC/cFb5SdhDgseoBt+kTinYoPfGEeFBgLifJheUad39kLJlUFEcZd469ea11GFr+1bMqziBiTNurOG/OeM0yIQS54fq6tlnxDcOQ/X61G1Ofu7rVeRIGvQ5UmA3H/hPyKNh/YDdbdjMKg+axGM=
-  on:
-    branch: master
-    tags: false
-    condition: $TRAVIS_PYTHON_VERSION = "2.7"
+      - provider: pypi
+        distributions: sdist
+        server: https://test.pypi.org/legacy/
+        user: peshay
+        password:
+          secure: T5r5SeC9Xj6Nz8U8ffm22v266rj8vBqDXwEuPzJ5n6Ut0xAegU+Nh9whQyDdz4z94Nz+PCc/goGa7ezyhAO55/XVCfhjBnx1eEJBjwiS0COYdUUKZxWcv0gbqzf2hz+g6QdvwlgnjASoj/ldNAkMGqOOpp42Gak1/Q1gxI1nDJIFUGCnUPvXiTbNs4Vx6EH19cJcSBUmeCsmcVd0NMwJA5mZoOhFM3ktdrj/kT/XskM2nmFDfL8wY10LsuiUXsef+n+vq7iX04/Ql0XbEpIPw8KF+cEin7Dvc7gHDyJ4wu6Jw3c/iuhRzq5zieJarT5tahTVncPOel87AO9bVYQ8RKSxIPVqgCb21iNlGlA5+QU7MBsM70i0vPu9rasQRBQqZ+SqcrimVPiLpxWH3sxQBjyNLmkd6a6ZBB8h3zp9Bybw/ANNGrouFtVWH2klmgkAx5HGEUmDa5BgEf7ti8ievkff5gFpSF0sAHZUCb/o3UUEk3kPE06L5zEunyqWYvlTu1Ead8A8xJNYbMf7ELcICqUL9bC/cFb5SdhDgseoBt+kTinYoPfGEeFBgLifJheUad39kLJlUFEcZd469ea11GFr+1bMqziBiTNurOG/OeM0yIQS54fq6tlnxDcOQ/X61G1Ofu7rVeRIGvQ5UmA3H/hPyKNh/YDdbdjMKg+axGM=
+        on:
+          branch: master
+          tags: false
+          condition: $TRAVIS_PYTHON_VERSION = "2.7"
