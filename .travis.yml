@@ -11,12 +11,10 @@ install:
 - pip install -r requirements.txt
 - pip install -r tpmstore/tests/requirements.txt
 - python setup.py -q install
-
+script: nosetests -v --with-coverage
+after_success: codecov
 jobs:
   include:
-    - stage: Tests
-      script: nosetests -v --with-coverage
-      after_success: codecov
     - stage: Releases
       before_deploy: tar -czf tpmstore-$TRAVIS_TAG.tar.gz tpmstore/*.py
       deploy:
