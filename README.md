@@ -8,6 +8,10 @@
 
 # tpmstore - Returns information, creates or updates entries from TeamPasswordManager
 
+## Installation
+`pip3 install tpmstore`
+Upon installation it will create a symlink in pip installed ansible/plugins/lookup to itself.
+
 ## Synopsis
 Give login information to TeamPasswordManager and it can return information from TeamPasswordManager searches or even create or update entires.
 
