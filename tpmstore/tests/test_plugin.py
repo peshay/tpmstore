@@ -18,12 +18,6 @@ from os.path import islink
 
 log = getLogger(__name__)
 
-class TestInstallation(unittest.TestCase):
-    def test_installed_to_plugin_dir(self):
-        self.plugin_link = site.getsitepackages()[0] + '/ansible/plugins/lookup/tpmstore.py'
-        print(self.plugin_link)
-        self.assertTrue(islink(self.plugin_link))
-
 class TestPluginQueries(unittest.TestCase):
 
     def setUp(self):
