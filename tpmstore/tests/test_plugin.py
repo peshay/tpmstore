@@ -13,21 +13,27 @@ from tpmstore.tpmstore import LookupModule
 from tpm import TpmApiv4
 from tpm import TPMException
 from logging import getLogger
-
+import site
+from os.path import islink
 
 log = getLogger(__name__)
 
+class TestInstallation(unittest.TestCase):
+    def test_installed_to_plugin_dir(self):
+        self.plugin_link = site.getsitepackages()[0] + '/ansible/plugins/lookup/tpmstore.py'
+        print(self.plugin_link)
+        self.assertTrue(islink(self.plugin_link))
 
 class TestPluginQueries(unittest.TestCase):
-    
+
     def setUp(self):
         self.lookup_plugin = LookupModule()
         self.patcher = patch('tpm.TpmApiv4.__init__', return_value=None)
         self.tpm_init_mock = self.patcher.start()
-    
+
     def tearDown(self):
         self.patcher.stop()
-    
+
     @patch('tpm.TpmApiv4.list_passwords_search', return_value=[{'id': 42}, {'id': 73}])
     def test_too_many_results_exception(self, tpm_list_mock):
         search_sring = "2result"
@@ -94,7 +100,7 @@ class TestPluginQueries(unittest.TestCase):
         self.assertEqual(result, ['foobar'])
 
     @patch('tpm.TpmApiv4.list_passwords_search', return_value=[{'id': 42}])
-    @patch('tpm.TpmApiv4.show_password', return_value={'id': 42, 'password': 'foobar'})   
+    @patch('tpm.TpmApiv4.show_password', return_value={'id': 42, 'password': 'foobar'})
     def test_successful_search_result(self, mock_show, mock_search):
         search = 'username:[foobar]'
         plugin_args = ['https://foo.bar', 'tpmuser', 'tpmass', 'search={}'.format(search)]
@@ -228,4 +234,3 @@ class TestExceptions(unittest.TestCase):
             self.lookup_plugin.run(['https://foo.bar', 'tpmuser', 'tpmass', 'return_value=foobar'])
         log.debug("context exception: {}".format(context.exception))
         self.assertTrue(exception_error in str(context.exception))
-        
