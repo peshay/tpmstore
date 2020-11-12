@@ -238,7 +238,7 @@ class LookupModule(LookupBase):
         elif len(th.match) > 1:
             raise AnsibleError("Found more then one match for the entry, please be more specific: {}".format(th.name))
         elif th.create == True:
-            result = th.tpmconn.show_password(th.match[0])
+            result = th.tpmconn.show_password(th.match[0].get("id"))
             display.display('Will update entry "{}" with ID "{}"'.format(result.get("name"), result.get("id")))
             if hasattr(th, "password"):
                 if th.password == "random":
